@@ -24,7 +24,11 @@ class KojiSource(BuildSource):
     tool = 'koji'
 
     def _download_build(self, build):
-        run(self.tool, 'download-build', build.id)
+        run(self.tool, 'download-build',
+            '--arch=noarch',
+            '--arch=src',
+            '--arch=x86_64',
+            build.id)
 
     def _build_available(self, build):
         o = run(self.tool, 'buildinfo', build.id, fatal=False)
@@ -84,6 +88,9 @@ class KojiScratchSource(BuildSource):
             if not tasks:
                 return ErrorBool(
                     err='build task %i returned no buildArch tasks.' % task_id)
+            else:
+                tasks = [ task for task in tasks if task.get('arch')
+                                                    in ['noarch', 'x86_64'] ]
         else:
             tasks = [task]
         return tasks
